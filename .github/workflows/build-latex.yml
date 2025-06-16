@@ -1,32 +1,63 @@
-# .github/workflows/build-latex.yml
-name: Build LaTeX Docker Image
+name: Build LaTeX Windows Docker Image
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:  # Permet de lancer manuellement
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
-    runs-on: windows-2022  # Runner Windows pour Docker Windows
+    runs-on: windows-latest
     
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v4
-    
+      
+    - name: Set up Docker
+      run: |
+        # Configurer Docker pour Windows containers
+        docker version
+        
+    - name: Configure DNS for Docker
+      run: |
+        # Configurer des DNS publics fiables
+        docker run --rm mcr.microsoft.com/windows/servercore:ltsc2022 powershell -c "nslookup miktex.org 8.8.8.8"
+        
+    - name: Test network connectivity
+      run: |
+        docker run --rm mcr.microsoft.com/windows/servercore:ltsc2022 powershell -c "Test-NetConnection -ComputerName miktex.org -Port 443"
+        
+    - name: Build Docker image with retry
+      run: |
+        $maxAttempts = 3
+        $attempt = 0
+        
+        do {
+          $attempt++
+          Write-Host "Build attempt $attempt of $maxAttempts"
+          
+          try {
+            docker build --dns=8.8.8.8 --dns=8.8.4.4 -t latexregistry1750034388.azurecr.io/latex-windows:latest .
+            Write-Host "Build successful!"
+            break
+          }
+          catch {
+            Write-Host "Build failed: $_"
+            if ($attempt -eq $maxAttempts) {
+              throw "All build attempts failed"
+            }
+            Write-Host "Waiting 30 seconds before retry..."
+            Start-Sleep -Seconds 30
+          }
+        } while ($attempt -lt $maxAttempts)
+        
     - name: Login to Azure Container Registry
+      if: success()
       run: |
-        echo ${{ secrets.ACR_PASSWORD }} | docker login latexregistry1750034388.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
-    
-    - name: Build Docker image
-      run: |
-        docker build -t latexregistry1750034388.azurecr.io/latex-windows:latest .
-        docker build -t latexregistry1750034388.azurecr.io/latex-windows:${{ github.sha }} .
-    
-    - name: Push to ACR
+        docker login latexregistry1750034388.azurecr.io -u ${{ secrets.ACR_USERNAME }} -p ${{ secrets.ACR_PASSWORD }}
+        
+    - name: Push Docker image
+      if: success()
       run: |
         docker push latexregistry1750034388.azurecr.io/latex-windows:latest
-        docker push latexregistry1750034388.azurecr.io/latex-windows:${{ github.sha }}
-    
-    - name: Image verification
-      run: docker images latexregistry1750034388.azurecr.io/latex-windows
