@@ -9,8 +9,8 @@ WORKDIR C:\\workspace
 
 # Télécharger et installer MiKTeX
 RUN Invoke-WebRequest -Uri 'https://miktex.org/download/ctan/systems/win32/miktex/setup/windows-x64/basic-miktex-24.1-x64.exe' -OutFile 'miktex-installer.exe' ; \
-    Start-Process -FilePath 'basic-miktex-24.1-x64' -ArgumentList '--unattended', '--auto-install=yes', '--shared=yes' -Wait ; \
-    Remove-Item 'basic-miktex-24.1-x64' -Force
+    Start-Process -FilePath 'miktex-installer.exe' -ArgumentList '--unattended', '--auto-install=yes', '--shared=yes' -Wait ; \
+    Remove-Item 'miktex-installer.exe' -Force
 
 # Ajouter MiKTeX au PATH
 RUN $env:PATH += ';C:\\Program Files\\MiKTeX\\miktex\\bin\\x64' ; \
