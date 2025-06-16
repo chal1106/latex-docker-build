@@ -1,0 +1,28 @@
+name: Build LaTeX Docker Image
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Docker login to Azure Container Registry
+      run: |
+        echo ${{ secrets.ACR_PASSWORD }} | docker login latexregistry1750034388.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
+
+    - name: Build Docker image
+      run: |
+        docker build -t latexregistry1750034388.azurecr.io/latex-windows:latest .
+        docker tag latexregistry1750034388.azurecr.io/latex-windows:latest latexregistry1750034388.azurecr.io/latex-windows:${{ github.sha }}
+
+    - name: Push Docker image to ACR
+      run: |
+        docker push latexregistry1750034388.azurecr.io/latex-windows:latest
+        docker push latexregistry1750034388.azurecr.io/latex-windows:${{ github.sha }}
