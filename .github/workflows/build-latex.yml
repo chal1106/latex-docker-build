@@ -1,28 +1,32 @@
+# .github/workflows/build-latex.yml
 name: Build LaTeX Docker Image
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
+  workflow_dispatch:  # Permet de lancer manuellement
 
 jobs:
   build:
-    runs-on: windows-2022
-
+    runs-on: windows-2022  # Runner Windows pour Docker Windows
+    
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v4
-
-    - name: Docker login to Azure Container Registry
+    
+    - name: Login to Azure Container Registry
       run: |
         echo ${{ secrets.ACR_PASSWORD }} | docker login latexregistry1750034388.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
-
+    
     - name: Build Docker image
       run: |
         docker build -t latexregistry1750034388.azurecr.io/latex-windows:latest .
-        docker tag latexregistry1750034388.azurecr.io/latex-windows:latest latexregistry1750034388.azurecr.io/latex-windows:${{ github.sha }}
-
-    - name: Push Docker image to ACR
+        docker build -t latexregistry1750034388.azurecr.io/latex-windows:${{ github.sha }} .
+    
+    - name: Push to ACR
       run: |
         docker push latexregistry1750034388.azurecr.io/latex-windows:latest
         docker push latexregistry1750034388.azurecr.io/latex-windows:${{ github.sha }}
+    
+    - name: Image verification
+      run: docker images latexregistry1750034388.azurecr.io/latex-windows
