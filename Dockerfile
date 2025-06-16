@@ -19,13 +19,12 @@ RUN $env:PATH += ';C:\\Program Files\\MiKTeX\\miktex\\bin\\x64' ; \
 # Créer le répertoire pour les images statiques
 RUN New-Item -ItemType Directory -Path 'C:\\workspace\\images' -Force
 
-# Copier les images statiques dans l'image Docker
-COPY images/70.jpg C:/workspace/images/
-COPY images/arabel.png C:/workspace/images/
-COPY images/logo.png C:/workspace/images/
-COPY images/ptwin.png C:/workspace/images/
-COPY images/cach.png C:/workspace/images/
-COPY images/bac.jpg C:/workspace/images/
+COPY 70.jpg C:/workspace/images/
+COPY arabel.png C:/workspace/images/
+COPY logo.png C:/workspace/images/
+COPY ptwin.png C:/workspace/images/
+COPY cach.png C:/workspace/images/
+COPY bac.jpg C:/workspace/images/
 
 # Installer les packages LaTeX essentiels
 RUN & 'C:\\Program Files\\MiKTeX\\miktex\\bin\\x64\\mpm.exe' --admin --install-some=amsmath,amsfonts,amssymb,graphicx,geometry,fancyhdr,babel,inputenc,fontenc,lmodern,microtype,xcolor,tikz,pgf,booktabs,longtable,array,multirow,hhline,calc,etoolbox,kvsetkeys,ltxcmds,infwarerr,gettitlestring,pdftexcmds,hycolor,hyperref,url,bitset,intcalc,bigintcalc,atbegshi,atveryend,rerunfilecheck,uniquecounter,letltxmacro,hopatch,xcolor-patch,auxhook,kvoptions
